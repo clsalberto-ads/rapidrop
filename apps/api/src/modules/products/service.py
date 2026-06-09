@@ -1,11 +1,20 @@
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from src.models.product import Product, ProductVariation
 
 logger = structlog.get_logger()
+
+
+def _product_query():
+    """Base product query that eagerly loads category and variations."""
+    return (
+        select(Product)
+        .options(joinedload(Product.category))
+        .options(selectinload(Product.variations))
+    )
 
 
 # --- Products ---
@@ -19,11 +28,7 @@ async def list_products(
     search: str | None = None,
 ) -> tuple[list[Product], int]:
     """List products for a merchant with optional filters."""
-    query = (
-        select(Product)
-        .options(joinedload(Product.category))
-        .where(Product.merchant_id == merchant_id)
-    )
+    query = _product_query().where(Product.merchant_id == merchant_id)
 
     if category_id:
         query = query.where(Product.category_id == category_id)
@@ -39,10 +44,6 @@ async def list_products(
     result = await db.execute(query)
     products = list(result.unique().scalars().all())
 
-    # Load variations for each product
-    for product in products:
-        product.variations_list = await _get_variations(db, product.id)
-
     total = len(products)
     return products, total
 
@@ -50,14 +51,12 @@ async def list_products(
 async def get_product(db: AsyncSession, product_id: str, merchant_id: str) -> Product | None:
     """Get a single product by id, scoped to merchant."""
     result = await db.execute(
-        select(Product)
-        .options(joinedload(Product.category))
-        .where(Product.id == product_id, Product.merchant_id == merchant_id)
+        _product_query().where(
+            Product.id == product_id,
+            Product.merchant_id == merchant_id,
+        )
     )
-    product = result.unique().scalar_one_or_none()
-    if product:
-        product.variations_list = await _get_variations(db, product.id)
-    return product
+    return result.unique().scalar_one_or_none()
 
 
 async def create_product(db: AsyncSession, merchant_id: str, data: dict) -> Product:
@@ -66,7 +65,6 @@ async def create_product(db: AsyncSession, merchant_id: str, data: dict) -> Prod
     db.add(product)
     await db.commit()
     await db.refresh(product)
-    product.variations_list = []
     logger.info("product_created", merchant_id=merchant_id, product_id=str(product.id))
     return product
 
@@ -85,7 +83,6 @@ async def update_product(
 
     await db.commit()
     await db.refresh(product)
-    product.variations_list = await _get_variations(db, product.id)
     logger.info("product_updated", merchant_id=merchant_id, product_id=str(product.id))
     return product
 
@@ -103,16 +100,6 @@ async def delete_product(db: AsyncSession, product_id: str, merchant_id: str) ->
 
 
 # --- Variations ---
-
-
-async def _get_variations(db: AsyncSession, product_id: str) -> list[ProductVariation]:
-    """Get all variations for a product."""
-    result = await db.execute(
-        select(ProductVariation)
-        .where(ProductVariation.product_id == product_id)
-        .order_by(ProductVariation.name)
-    )
-    return list(result.scalars().all())
 
 
 async def create_variation(

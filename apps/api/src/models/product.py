@@ -5,10 +5,11 @@ from datetime import datetime
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base
 from src.core.uuid7 import utcnow, uuid7
+from src.models.category import ProductCategory
 
 
 class UnitType(enum.StrEnum):
@@ -25,6 +26,7 @@ class Product(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("product_categories.id"), nullable=True)
+    category: Mapped["ProductCategory"] = relationship("ProductCategory", lazy="joined")
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -38,6 +40,10 @@ class Product(Base):
     segment_specific: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    variations: Mapped[list["ProductVariation"]] = relationship(
+        "ProductVariation", back_populates="product", lazy="selectin",
+        order_by="ProductVariation.name",
+    )
 
 
 class ProductVariation(Base):
@@ -50,3 +56,4 @@ class ProductVariation(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    product: Mapped["Product"] = relationship("Product", back_populates="variations")

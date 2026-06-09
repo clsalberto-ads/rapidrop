@@ -11,6 +11,7 @@ from src.modules.products.schemas import (
     ProductResponse,
     ProductUpdate,
     VariationCreate,
+    VariationItem,
     VariationResponse,
     VariationUpdate,
 )
@@ -34,9 +35,8 @@ def _fmt_price(cents: int) -> str:
 
 
 def _product_to_response(product) -> ProductResponse:
-    cat = product.category if hasattr(product, "category") else None
-    category_name = cat.name if cat else None
-    variations = getattr(product, "variations_list", []) or []
+    category_name = product.category.name if product.category else None
+    variations = product.variations or []
 
     return ProductResponse(
         id=str(product.id),
@@ -58,12 +58,12 @@ def _product_to_response(product) -> ProductResponse:
         stock_quantity=product.stock_quantity,
         stock_alert_at=product.stock_alert_at,
         variations=[
-            {
-                "id": str(v.id),
-                "name": v.name,
-                "price_cents_adjustment": v.price_cents_adjustment,
-                "is_default": v.is_default,
-            }
+            VariationItem(
+                id=str(v.id),
+                name=v.name,
+                price_cents_adjustment=v.price_cents_adjustment,
+                is_default=v.is_default,
+            )
             for v in variations
         ],
         created_at=product.created_at,
@@ -180,8 +180,7 @@ async def list_variations_endpoint(
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
-    variations = getattr(product, "variations_list", [])
-    return [_variation_to_response(v) for v in variations]
+    return [_variation_to_response(v) for v in product.variations]
 
 
 @router.post(

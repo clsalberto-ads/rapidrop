@@ -1,21 +1,24 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
 from src.core.uuid7 import uuid7
-import enum
 
 
-class OrderChannel(str, enum.Enum):
+class OrderChannel(enum.StrEnum):
     whatsapp = "whatsapp"
     app = "app"
     web = "web"
     phone = "phone"
 
 
-class OrderStatus(str, enum.Enum):
+class OrderStatus(enum.StrEnum):
     pending = "pending"
     confirmed = "confirmed"
     preparing = "preparing"
@@ -25,14 +28,14 @@ class OrderStatus(str, enum.Enum):
     cancelled = "cancelled"
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     pending = "pending"
     approved = "approved"
     declined = "declined"
     refunded = "refunded"
 
 
-class OrderRiderStatus(str, enum.Enum):
+class OrderRiderStatus(enum.StrEnum):
     assigned = "assigned"
     accepted = "accepted"
     picked_up = "picked_up"

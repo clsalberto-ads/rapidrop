@@ -1,6 +1,7 @@
-from pathlib import Path
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
+
+from pydantic_settings import BaseSettings
 
 # .env está na raiz do monorepo (dois níveis acima deste arquivo)
 ENV_FILE = Path(__file__).parent.parent.parent.parent.parent / ".env"
@@ -41,7 +42,7 @@ class Settings(BaseSettings):
     model_config = {"env_file": str(ENV_FILE), "case_sensitive": True}
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()
 

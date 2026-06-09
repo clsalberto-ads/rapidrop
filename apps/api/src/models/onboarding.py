@@ -1,14 +1,17 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
 from src.core.uuid7 import uuid7
-import enum
 
 
-class OnboardingStatus(str, enum.Enum):
+class OnboardingStatus(enum.StrEnum):
     pending = "pending"
     active = "active"
     completed = "completed"

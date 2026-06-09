@@ -2,7 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, JSON, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,7 +11,7 @@ from src.core.database import Base
 from src.core.uuid7 import uuid7
 
 
-class MerchantSegment(str, enum.Enum):
+class MerchantSegment(enum.StrEnum):
     food = "food"
     pharmacy = "pharmacy"
     grocery = "grocery"

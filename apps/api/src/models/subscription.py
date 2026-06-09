@@ -2,7 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Float, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,7 +11,7 @@ from src.core.database import Base
 from src.core.uuid7 import uuid7
 
 
-class SubscriptionStatus(str, enum.Enum):
+class SubscriptionStatus(enum.StrEnum):
     trial = "trial"
     active = "active"
     paused = "paused"
@@ -18,13 +19,13 @@ class SubscriptionStatus(str, enum.Enum):
     expired = "expired"
 
 
-class SubscriptionPhase(str, enum.Enum):
+class SubscriptionPhase(enum.StrEnum):
     trial = "trial"
     phase1_percentage = "phase1_percentage"
     phase2_fixed = "phase2_fixed"
 
 
-class PhaseChangedBy(str, enum.Enum):
+class PhaseChangedBy(enum.StrEnum):
     system = "system"
     admin = "admin"
     merchant = "merchant"

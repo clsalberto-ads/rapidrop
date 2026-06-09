@@ -1,9 +1,9 @@
 import enum
 import uuid
 from datetime import datetime
-from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, JSON, Numeric, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,11 +11,11 @@ from src.core.database import Base
 from src.core.uuid7 import uuid7
 
 
-class UnitType(str, enum.Enum):
+class UnitType(enum.StrEnum):
     unit = "unit"
     kg = "kg"
     g = "g"
-    l = "l"
+    liter = "l"
     ml = "ml"
 
 

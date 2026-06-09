@@ -1,14 +1,17 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Float, Integer, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
 from src.core.uuid7 import uuid7
-import enum
 
 
-class PaymentMethodType(str, enum.Enum):
+class PaymentMethodType(enum.StrEnum):
     credit_card = "credit_card"
     debit_card = "debit_card"
     pix = "pix"

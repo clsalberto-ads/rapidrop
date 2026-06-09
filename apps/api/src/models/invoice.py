@@ -1,27 +1,30 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
 from src.core.uuid7 import uuid7
-import enum
 
 
-class InvoiceType(str, enum.Enum):
+class InvoiceType(enum.StrEnum):
     percentage = "percentage"
     fixed = "fixed"
     adjustment = "adjustment"
 
 
-class InvoicePaymentStatus(str, enum.Enum):
+class InvoicePaymentStatus(enum.StrEnum):
     pending = "pending"
     paid = "paid"
     overdue = "overdue"
     cancelled = "cancelled"
 
 
-class PaymentTransactionStatus(str, enum.Enum):
+class PaymentTransactionStatus(enum.StrEnum):
     pending = "pending"
     approved = "approved"
     declined = "declined"

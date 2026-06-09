@@ -3,34 +3,34 @@
 import enum
 
 
-class RiderStatus(str, enum.Enum):
+class RiderStatus(enum.StrEnum):
     available = "available"
     busy = "busy"
     offline = "offline"
     inactive = "inactive"
 
 
-class VehicleType(str, enum.Enum):
+class VehicleType(enum.StrEnum):
     motorcycle = "motorcycle"
     bicycle = "bicycle"
     car = "car"
     walking = "walking"
 
 
-class PaymentMethod(str, enum.Enum):
+class PaymentMethod(enum.StrEnum):
     per_delivery = "per_delivery"
     per_hour = "per_hour"
     monthly_fixed = "monthly_fixed"
     hybrid = "hybrid"
 
 
-class PaymentStrategy(str, enum.Enum):
+class PaymentStrategy(enum.StrEnum):
     automatic = "automatic"
     manual = "manual"
     ranking_based = "ranking_based"
 
 
-class PaymentPeriodStatus(str, enum.Enum):
+class PaymentPeriodStatus(enum.StrEnum):
     pending = "pending"
     approved = "approved"
     paid = "paid"

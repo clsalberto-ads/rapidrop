@@ -5,5 +5,10 @@ line-length = 100
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "PTH", "RUF"]
 ignore = ["ARG001", "B008"]
 
+# SQLAlchemy column definitions are inherently verbose — allow long lines
+[lint.per-file-ignores]
+"src/models/**" = ["E501"]
+"src/modules/**" = ["E501"]
+
 [format]
 quote-style = "double"

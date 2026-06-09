@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, JSON, Numeric, String
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,7 +11,6 @@ from src.core.enums import (
     PaymentMethod,
     PaymentPeriodStatus,
     PaymentStrategy,
-    RiderStatus,
     VehicleType,
 )
 from src.core.uuid7 import uuid7

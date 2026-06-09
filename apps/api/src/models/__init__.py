@@ -8,9 +8,11 @@ from src.models.customer import Customer, CustomerAddress, CustomerPaymentMethod
 from src.models.order import Order, OrderItem, OrderRider
 from src.models.invoice import Invoice, InvoiceTransaction, PaymentTransaction
 from src.models.onboarding import MerchantOnboarding, OnboardingEvent
+from src.modules.auth.models import MerchantSession
 from src.models.audit import AuditLog
 
 __all__ = [
+    "MerchantSession",
     "Merchant",
     "PricingPlan",
     "MerchantSubscription",

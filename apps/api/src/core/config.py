@@ -1,5 +1,9 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+# .env está na raiz do monorepo (dois níveis acima deste arquivo)
+ENV_FILE = Path(__file__).parent.parent.parent.parent.parent / ".env"
 
 
 class Settings(BaseSettings):
@@ -34,7 +38,7 @@ class Settings(BaseSettings):
     APP_URL: str = "http://localhost:3000"
     API_URL: str = "http://localhost:8000"
 
-    model_config = {"env_file": ".env", "case_sensitive": True}
+    model_config = {"env_file": str(ENV_FILE), "case_sensitive": True}
 
 
 @lru_cache()

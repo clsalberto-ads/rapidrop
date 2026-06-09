@@ -1,36 +1,39 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, Float, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
-import enum
+from src.core.uuid7 import uuid7
 
 
 class SubscriptionStatus(str, enum.Enum):
     trial = "trial"
-    active_percentage = "active_percentage"
-    active_fixed = "active_fixed"
-    suspended = "suspended"
+    active = "active"
+    paused = "paused"
     cancelled = "cancelled"
+    expired = "expired"
 
 
 class SubscriptionPhase(str, enum.Enum):
     trial = "trial"
-    percentage = "percentage"
-    fixed = "fixed"
+    phase1_percentage = "phase1_percentage"
+    phase2_fixed = "phase2_fixed"
 
 
 class PhaseChangedBy(str, enum.Enum):
     system = "system"
-    merchant = "merchant"
     admin = "admin"
+    merchant = "merchant"
 
 
 class MerchantSubscription(Base):
     __tablename__ = "merchant_subscriptions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     pricing_plan_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("pricing_plans.id"), nullable=False)
     status: Mapped[SubscriptionStatus] = mapped_column(SAEnum(SubscriptionStatus), nullable=False, default=SubscriptionStatus.trial)
@@ -52,10 +55,10 @@ class MerchantSubscription(Base):
 class MerchantSubscriptionPhaseLog(Base):
     __tablename__ = "merchant_subscription_phase_logs"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     subscription_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchant_subscriptions.id"), nullable=False, index=True)
     previous_phase: Mapped[SubscriptionPhase | None] = mapped_column(SAEnum(SubscriptionPhase), nullable=True)
     new_phase: Mapped[SubscriptionPhase] = mapped_column(SAEnum(SubscriptionPhase), nullable=False)
     changed_by: Mapped[PhaseChangedBy] = mapped_column(SAEnum(PhaseChangedBy), nullable=False)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    log_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

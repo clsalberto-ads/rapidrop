@@ -4,6 +4,7 @@ from sqlalchemy import String, Boolean, DateTime, Float, Integer, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from src.core.database import Base
+from src.core.uuid7 import uuid7
 import enum
 
 
@@ -16,7 +17,7 @@ class PaymentMethodType(str, enum.Enum):
 class Customer(Base):
     __tablename__ = "customers"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False, unique=True, index=True)
     phone_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -31,7 +32,7 @@ class Customer(Base):
 class CustomerAddress(Base):
     __tablename__ = "customer_addresses"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     customer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=False, index=True)
     label: Mapped[str] = mapped_column(String(100), default="Casa")
     zipcode: Mapped[str] = mapped_column(String(10), nullable=False)
@@ -53,7 +54,7 @@ class CustomerAddress(Base):
 class CustomerPaymentMethod(Base):
     __tablename__ = "customer_payment_methods"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     customer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=False, index=True)
     type: Mapped[PaymentMethodType] = mapped_column(SAEnum(PaymentMethodType), nullable=False)
     gateway: Mapped[str] = mapped_column(String(50), nullable=False)

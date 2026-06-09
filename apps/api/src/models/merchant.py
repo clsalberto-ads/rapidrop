@@ -1,10 +1,13 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, JSON, Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, JSON, String, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
-import enum
+from src.core.uuid7 import uuid7
 
 
 class MerchantSegment(str, enum.Enum):
@@ -16,12 +19,13 @@ class MerchantSegment(str, enum.Enum):
 class Merchant(Base):
     __tablename__ = "merchants"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     business_name: Mapped[str] = mapped_column(String(255), nullable=False)
     document: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     segment: Mapped[MerchantSegment] = mapped_column(SAEnum(MerchantSegment), nullable=False)
     address: Mapped[dict] = mapped_column(JSON, default=dict)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

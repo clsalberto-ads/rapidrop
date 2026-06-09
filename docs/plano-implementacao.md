@@ -57,6 +57,29 @@ Sprint 17-18:       Sprint 19-21:       Sprint 22-24:
 
 ---
 
+## Convenções Técnicas
+
+### Chaves Primárias — UUIDv7 (obrigatório)
+
+Todas as chaves primárias (`id`) do sistema usam **UUIDv7** (time-ordered), gerado via `uuid.uuid7()` do Python 3.14+.
+
+| Por que UUIDv7? | UUIDv4 (aleatório) | UUIDv7 (timestamp) |
+|:----------------|:-------------------|:--------------------|
+| Índices B-tree | Fragmenta páginas | Mantém sequencial |
+| INSERT em tabelas grandes | Lento (escrita aleatória) | Rápido (escrita sequencial) |
+| Ordenação implícita | Não ordenável | Ordenável por criação |
+
+**Implementação:** helper `src/core/uuid7.py` com `def uuid7() -> uuid.UUID` que chama `uuid.uuid7()`.
+
+### Refresh Token — Auto-renovação
+
+O frontend armazena `access_token` (15min) e `refresh_token` (7d) no `localStorage`. Quando uma requisição recebe HTTP 401, o interceptor em `src/lib/api.ts`:
+1. Chama `POST /api/v1/auth/refresh` com o refresh_token
+2. Em caso de sucesso: armazena os novos tokens e retry a request original
+3. Em caso de falha: limpa tokens e redireciona para login
+
+---
+
 ## Sprint 0 — Fundação (Semana 1)
 
 **Meta:** Ambiente de desenvolvimento pronto para começar a codar.

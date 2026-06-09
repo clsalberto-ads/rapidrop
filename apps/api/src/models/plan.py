@@ -1,16 +1,21 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Float, Integer, Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from decimal import Decimal
+
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Float, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
+from src.core.uuid7 import uuid7
 from src.models.merchant import MerchantSegment
 
 
 class PricingPlan(Base):
     __tablename__ = "pricing_plans"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     segment: Mapped[MerchantSegment] = mapped_column(SAEnum(MerchantSegment), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     percentage_rate: Mapped[float] = mapped_column(Float, nullable=False)

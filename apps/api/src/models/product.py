@@ -1,10 +1,14 @@
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, Integer, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from decimal import Decimal
+
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, JSON, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
-import enum
+from src.core.uuid7 import uuid7
 
 
 class UnitType(str, enum.Enum):
@@ -18,7 +22,7 @@ class UnitType(str, enum.Enum):
 class Product(Base):
     __tablename__ = "products"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("product_categories.id"), nullable=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -39,7 +43,7 @@ class Product(Base):
 class ProductVariation(Base):
     __tablename__ = "product_variations"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     price_cents_adjustment: Mapped[int] = mapped_column(Integer, default=0)

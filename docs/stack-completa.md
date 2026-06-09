@@ -603,15 +603,21 @@ services:
 
 ## 9. Modelo de Dados — Todas as Tabelas
 
-### 9.1 Legenda
+### 9.1 Convenções
 
 ```
-PK  = Chave primária
+PK  = Chave primária UUIDv7 (time-ordered)
 FK  = Chave estrangeira
 UX  = Índice único
 IDX = Índice
 jsonb = Campo flexível (varia por segmento)
 ```
+
+**UUIDv7** é o padrão para todas as chaves primárias (`id`). Diferente do UUIDv4 (aleatório), o UUIDv7 é **ordenado por timestamp**, o que:
+- Mantém índices B-tree do PostgreSQL sequenciais (sem fragmentação)
+- Melhora performance de INSERT em tabelas com muitos registros
+- Permite ordenação por criação sem campo `created_at` extra
+- Gerado via `uuid.uuid7()` (nativo do Python 3.14+) ou função SQL `gen_uuid_v7()` via extensão `pg_uuidv7`
 
 ### 9.2 Contas e Acesso
 

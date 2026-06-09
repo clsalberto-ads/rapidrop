@@ -6,6 +6,7 @@ node_modules/
 dist/
 .next/
 *.egg-info/
+*.tsbuildinfo
 
 # Python
 __pycache__/

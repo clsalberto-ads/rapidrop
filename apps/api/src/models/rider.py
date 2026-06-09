@@ -1,39 +1,26 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, Integer, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from decimal import Decimal
+
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, JSON, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.core.database import Base
-import enum
-
-
-class VehicleType(str, enum.Enum):
-    motorcycle = "motorcycle"
-    bike = "bike"
-    car = "car"
-
-
-class PaymentMethod(str, enum.Enum):
-    per_delivery = "per_delivery"
-    per_hour = "per_hour"
-    fixed_shift = "fixed_shift"
-
-
-class PaymentStrategy(str, enum.Enum):
-    automatic = "automatic"
-    manual = "manual"
-
-
-class PaymentPeriodStatus(str, enum.Enum):
-    pending = "pending"
-    paid = "paid"
-    cancelled = "cancelled"
+from src.core.enums import (
+    PaymentMethod,
+    PaymentPeriodStatus,
+    PaymentStrategy,
+    RiderStatus,
+    VehicleType,
+)
+from src.core.uuid7 import uuid7
 
 
 class Rider(Base):
     __tablename__ = "riders"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -50,7 +37,7 @@ class Rider(Base):
 class RiderPaymentConfig(Base):
     __tablename__ = "rider_payment_configs"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     method: Mapped[PaymentMethod] = mapped_column(SAEnum(PaymentMethod), nullable=False)
     strategy: Mapped[PaymentStrategy] = mapped_column(SAEnum(PaymentStrategy), nullable=False)
@@ -64,7 +51,7 @@ class RiderPaymentConfig(Base):
 class RiderPaymentPeriod(Base):
     __tablename__ = "rider_payment_periods"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     merchant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
     rider_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("riders.id"), nullable=False, index=True)
     period_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)

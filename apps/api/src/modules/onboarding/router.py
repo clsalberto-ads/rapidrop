@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.models.onboarding import OnboardingStatus
-from src.modules.auth.deps import get_current_merchant
+from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.onboarding.schemas import OnboardingStatusResponse
 from src.modules.onboarding.service import advance_step, get_or_create_onboarding
 
@@ -17,7 +17,7 @@ async def get_status(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     onboarding = await get_or_create_onboarding(db, merchant_id)
 
     return OnboardingStatusResponse(
@@ -33,7 +33,7 @@ async def post_step(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     onboarding = await advance_step(db, merchant_id, step)
 
     if onboarding.status == OnboardingStatus.blocked:

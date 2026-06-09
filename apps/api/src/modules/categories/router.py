@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
-from src.modules.auth.deps import get_current_merchant
+from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.categories.schemas import (
     CategoryCreate,
     CategoryListResponse,
@@ -40,7 +40,7 @@ async def list_categories_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """List all categories for the authenticated merchant."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     categories, total = await list_categories(db, merchant_id, only_active=only_active)
 
     return CategoryListResponse(
@@ -56,7 +56,7 @@ async def get_category_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single category by ID."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     category = await get_category(db, category_id, merchant_id)
 
     if not category:
@@ -72,7 +72,7 @@ async def create_category_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new category."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     category = await create_category(db, merchant_id, body.model_dump())
     return _category_to_response(category)
 
@@ -85,7 +85,7 @@ async def update_category_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a category."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     data = body.model_dump(exclude_none=True)
     category = await update_category(db, category_id, merchant_id, data)
 
@@ -102,7 +102,7 @@ async def delete_category_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft-delete a category (deactivate it)."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     deleted = await delete_category(db, category_id, merchant_id)
 
     if not deleted:

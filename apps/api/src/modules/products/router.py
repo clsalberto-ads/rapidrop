@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.models.product import UnitType
-from src.modules.auth.deps import get_current_merchant
+from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.products.schemas import (
     ProductCreate,
     ProductListResponse,
@@ -94,7 +94,7 @@ async def list_products_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """List products for the authenticated merchant."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     products, total = await list_products(
         db, merchant_id, category_id=category_id, only_available=only_available, search=search
     )
@@ -112,7 +112,7 @@ async def get_product_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single product by ID."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     product = await get_product(db, product_id, merchant_id)
 
     if not product:
@@ -128,7 +128,7 @@ async def create_product_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new product."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     product = await create_product(db, merchant_id, body.model_dump())
     return _product_to_response(product)
 
@@ -141,7 +141,7 @@ async def update_product_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a product."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     product = await update_product(db, product_id, merchant_id, body.model_dump(exclude_none=True))
 
     if not product:
@@ -157,7 +157,7 @@ async def delete_product_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft-delete a product (set is_available=False)."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     deleted = await delete_product(db, product_id, merchant_id)
 
     if not deleted:
@@ -174,7 +174,7 @@ async def list_variations_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """List all variations for a product."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     product = await get_product(db, product_id, merchant_id)
 
     if not product:
@@ -196,7 +196,7 @@ async def create_variation_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new variation for a product."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     variation = await create_variation(db, product_id, merchant_id, body.model_dump())
 
     if not variation:
@@ -217,7 +217,7 @@ async def update_variation_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a variation."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     variation = await update_variation(
         db, variation_id, product_id, merchant_id, body.model_dump(exclude_none=True)
     )
@@ -236,7 +236,7 @@ async def delete_variation_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a variation."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     deleted = await delete_variation(db, variation_id, product_id, merchant_id)
 
     if not deleted:

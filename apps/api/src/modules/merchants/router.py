@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
-from src.modules.auth.deps import get_current_merchant
+from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.auth.schemas import MerchantMeResponse
 from src.modules.merchants.schemas import (
     LogoUploadResponse,
@@ -37,7 +37,7 @@ async def get_my_merchant(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await get_merchant_by_id(db, merchant_id)
 
     if not merchant:
@@ -52,7 +52,7 @@ async def update_my_merchant(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await update_merchant(db, merchant_id, body.model_dump(exclude_none=True))
 
     if not merchant:
@@ -67,7 +67,7 @@ async def update_my_segment(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await update_segment(db, merchant_id, body.segment)
 
     if not merchant:
@@ -85,7 +85,7 @@ async def get_store_settings(
     db: AsyncSession = Depends(get_db),
 ):
     """Get store configuration: operating hours, delivery area, delivery fee."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await get_merchant_by_id(db, merchant_id)
 
     if not merchant:
@@ -106,7 +106,7 @@ async def update_store_settings(
     db: AsyncSession = Depends(get_db),
 ):
     """Update store configuration: operating hours, delivery area, delivery fee."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await get_merchant_by_id(db, merchant_id)
 
     if not merchant:
@@ -142,7 +142,7 @@ async def upload_logo(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload store logo. Returns a placeholder URL — file upload via MinIO/S3 is post-MVP."""
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     merchant = await get_merchant_by_id(db, merchant_id)
 
     if not merchant:

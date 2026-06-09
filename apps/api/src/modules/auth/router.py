@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import get_db
 from src.models.merchant import Merchant, MerchantSegment
 from src.models.onboarding import MerchantOnboarding
-from src.modules.auth.deps import get_current_merchant
+from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.auth.schemas import (
     LoginRequest,
     MerchantMeResponse,
@@ -79,7 +79,7 @@ async def refresh(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
             detail="Invalid or expired refresh token",
         )
 
-    merchant_id = payload.get("sub")
+    merchant_id = extract_merchant_id(payload)
     logger.info("auth_refresh_success", merchant_id=merchant_id)
     tokens = create_tokens(merchant_id)
     return TokenResponse(**tokens)
@@ -90,7 +90,7 @@ async def me(
     current_merchant: dict = Depends(get_current_merchant),
     db: AsyncSession = Depends(get_db),
 ):
-    merchant_id = current_merchant.get("sub")
+    merchant_id = extract_merchant_id(current_merchant)
     result = await db.execute(select(Merchant).where(Merchant.id == merchant_id))
     merchant = result.scalar_one_or_none()
 

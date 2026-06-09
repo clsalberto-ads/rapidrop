@@ -41,10 +41,15 @@ async def list_categories_endpoint(
 ):
     """List all categories for the authenticated merchant."""
     merchant_id = extract_merchant_id(current_merchant)
-    categories, total = await list_categories(db, merchant_id, only_active=only_active)
+    categories, total, product_counts = await list_categories(
+        db, merchant_id, only_active=only_active
+    )
 
     return CategoryListResponse(
-        categories=[_category_to_response(c, getattr(c, "product_count", 0)) for c in categories],
+        categories=[
+            _category_to_response(c, product_counts.get(str(c.id), 0))
+            for c in categories
+        ],
         total=total,
     )
 

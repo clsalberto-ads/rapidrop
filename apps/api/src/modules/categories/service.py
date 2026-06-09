@@ -12,8 +12,12 @@ async def list_categories(
     db: AsyncSession,
     merchant_id: str,
     only_active: bool = False,
-) -> tuple[list[ProductCategory], int]:
-    """List categories for a merchant, ordered by sort_order."""
+) -> tuple[list[ProductCategory], int, dict[str, int]]:
+    """List categories for a merchant, ordered by sort_order.
+
+    Returns (categories, total, product_counts) where product_counts
+    maps category_id -> number of products in that category.
+    """
     query = select(ProductCategory).where(ProductCategory.merchant_id == merchant_id)
 
     if only_active:
@@ -33,14 +37,10 @@ async def list_categories(
         .group_by(ProductCategory.id)
     )
     count_result = await db.execute(count_query)
-    counts = {row[0]: row[1] for row in count_result}
+    product_counts = {str(row[0]): row[1] for row in count_result}
 
     total = len(categories)
-    # Attach product counts
-    for cat in categories:
-        cat.product_count = counts.get(cat.id, 0)
-
-    return categories, total
+    return categories, total, product_counts
 
 
 async def get_category(

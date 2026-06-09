@@ -9,7 +9,7 @@ def setup_logging():
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.StackInfoRenderer(),
-            structlog.dev.console() if __debug__ else structlog.processors.JSONRenderer(),
+            structlog.dev.ConsoleRenderer() if __debug__ else structlog.processors.JSONRenderer(),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
         context_class=dict,

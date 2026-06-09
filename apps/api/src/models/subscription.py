@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.database import Base
-from src.core.uuid7 import uuid7
+from src.core.uuid7 import utcnow, uuid7
 
 
 class SubscriptionStatus(enum.StrEnum):
@@ -49,8 +49,8 @@ class MerchantSubscription(Base):
     gateway_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     cancellation_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
 
 class MerchantSubscriptionPhaseLog(Base):
@@ -62,4 +62,4 @@ class MerchantSubscriptionPhaseLog(Base):
     new_phase: Mapped[SubscriptionPhase] = mapped_column(SAEnum(SubscriptionPhase), nullable=False)
     changed_by: Mapped[PhaseChangedBy] = mapped_column(SAEnum(PhaseChangedBy), nullable=False)
     log_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)

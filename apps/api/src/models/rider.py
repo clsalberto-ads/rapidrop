@@ -13,7 +13,7 @@ from src.core.enums import (
     PaymentStrategy,
     VehicleType,
 )
-from src.core.uuid7 import uuid7
+from src.core.uuid7 import utcnow, uuid7
 
 
 class Rider(Base):
@@ -29,8 +29,8 @@ class Rider(Base):
     is_online: Mapped[bool] = mapped_column(Boolean, default=False)
     current_location: Mapped[dict] = mapped_column(JSON, default=dict)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
 
 class RiderPaymentConfig(Base):
@@ -43,8 +43,8 @@ class RiderPaymentConfig(Base):
     config: Mapped[dict] = mapped_column(JSON, default=dict)
     ranking_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     ranking_config: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
 
 class RiderPaymentPeriod(Base):
@@ -64,5 +64,5 @@ class RiderPaymentPeriod(Base):
     status: Mapped[PaymentPeriodStatus] = mapped_column(SAEnum(PaymentPeriodStatus), default=PaymentPeriodStatus.pending, nullable=False)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     payment_method: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)

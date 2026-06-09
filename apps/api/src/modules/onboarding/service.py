@@ -1,9 +1,8 @@
-from datetime import datetime
-
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.uuid7 import utcnow
 from src.models.onboarding import MerchantOnboarding, OnboardingEvent, OnboardingStatus
 
 logger = structlog.get_logger()
@@ -77,7 +76,7 @@ async def complete_onboarding(db: AsyncSession, merchant_id: str) -> MerchantOnb
         db.add(onboarding)
 
     onboarding.status = OnboardingStatus.completed
-    onboarding.completed_at = datetime.utcnow()
+    onboarding.completed_at = utcnow()
 
     event = OnboardingEvent(
         onboarding_id=onboarding.id,

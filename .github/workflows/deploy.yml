@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  NODE_VERSION: "22"
+  PYTHON_VERSION: "3.12"
+  RAILWAY_PROJECT: rapidrop
+
+jobs:
+  deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy API to Railway
+        run: |
+          # TODO: Configurar Railway CLI e deploy automático
+          # railway up --service api --detach
+          echo "API deploy pending — configure Railway CLI token"
+
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm build
+      - name: Deploy to Railway
+        run: |
+          # TODO: Configurar Railway CLI e deploy automático
+          # railway up --service web --detach
+          echo "Web deploy pending — configure Railway CLI token"

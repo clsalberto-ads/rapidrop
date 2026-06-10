@@ -7,6 +7,7 @@ import { useEffect } from "react";
 
 const navItems = [
   { href: "/app", label: "Dashboard" },
+  { href: "/app/orders", label: "Pedidos" },
   { href: "/app/products", label: "Produtos" },
   { href: "/app/categories", label: "Categorias" },
   { href: "/app/riders", label: "Entregadores" },

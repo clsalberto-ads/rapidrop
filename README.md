@@ -22,7 +22,7 @@ Mobile:
 Infra:
   Docker Compose (dev) | Railway → AWS ECS (prod)
   Prometheus + Grafana + Loki + Tempo + OpenTelemetry
-  Sentry (erros) | MinIO (assets S3-compatible)
+  GlitchTip (erros, Sentry-compatible) | MinIO (assets S3-compatible)
 
 Pagamentos:
   Asaas (marketplace de pagamentos)
@@ -110,7 +110,7 @@ rapidrop/
 - Prometheus + Grafana (métricas)
 - Loki (logs) + Tempo (tracing distribuído)
 - OpenTelemetry SDK instrumentado
-- Sentry para captura de erros
+- GlitchTip para captura de erros (self-hosted, Sentry-compatible)
 
 ## Pré-requisitos
 
@@ -140,20 +140,47 @@ make setup
 make up
 
 # URLs locais:
-#   API:      http://localhost:8000
-#   Web:      http://localhost:3000
-#   Grafana:  http://localhost:3001
-#   MinIO:    http://localhost:9001
+#   API:        http://localhost:8000
+#   Web:        http://localhost:3000
+#   Grafana:    http://localhost:3001
+#   MinIO:      http://localhost:9001
+#   GlitchTip:  http://localhost:8000
+```
+
+### GlitchTip (Error Tracking)
+
+O GlitchTip é uma alternativa open-source ao Sentry, compatível com o mesmo protocolo e SDKs.
+
+```bash
+# Setup completo (cria DB, roda migrations, cria admin, sobe serviço)
+make glitchtip-setup
+
+# Acessar UI
+# http://localhost:8000
+# Login: admin@rapidrop.local / rapidrop123
+
+# Criar projeto na UI para obter DSN
+# 1. Login → "Create Project" → Nome: "RapiDrop API"
+# 2. Settings → Client Keys (DSN) → Copiar DSN
+# 3. Colar no .env como SENTRY_DSN
+
+# DSN interno (para API container): http://<public_key>@glitchtip:8000/<project_id>
+# DSN externo (para browser/mobile): http://<public_key>@localhost:8000/<project_id>
 ```
 
 ### Comandos úteis
 
 ```bash
-make test     # Roda testes do backend e frontend
-make lint     # Ruff (Python) + ESLint (frontend)
-make logs     # Logs dos containers Docker
-make down     # Para todos os serviços
-make clean    # Remove containers e diretórios de build
+make test           # Roda testes do backend e frontend
+make lint           # Ruff (Python) + ESLint (frontend)
+make logs           # Logs dos containers Docker
+make down           # Para todos os serviços
+make clean          # Remove containers e diretórios de build
+
+# GlitchTip
+make glitchtip-setup   # Setup completo (DB, migrations, admin, projeto)
+make glitchtip-reset   # Reset completo (apaga DB e volume, recria)
+make glitchtip-logs    # Logs do GlitchTip
 ```
 
 Também é possível iniciar cada app individualmente:

@@ -9,6 +9,8 @@ volumes:
   redis-data:
   grafana-data:
   minio-data:
+  tempo-data:
+  glitchtip-data:
 
 services:
   postgres:
@@ -90,8 +92,12 @@ services:
     image: grafana/tempo:latest
     ports:
       - "4317:4317"
+    volumes:
+      - ./infra/tempo/tempo.yml:/etc/tempo/tempo.yml
+      - tempo-data:/var/tempo/traces
     networks:
       - rapidrop-net
+    command: ["-config.file=/etc/tempo/tempo.yml"]
 
   minio:
     image: minio/minio:latest
@@ -106,3 +112,48 @@ services:
     networks:
       - rapidrop-net
     command: server /data --console-address ":9001"
+
+  glitchtip:
+    image: glitchtip/glitchtip:latest
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://rapidrop:rapidrop_dev@postgres:5432/glitchtip
+      SECRET_KEY: rapidrop-glitchtip-dev-secret-key-change-in-prod
+      PORT: "8000"
+      DISABLE_USER_REGISTRATION: "True"
+      ALLOWED_HOSTS: "localhost,glitchtip,127.0.0.1"
+      EMAIL_URL: smtp://localhost:25
+      CACHE_URL: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: "True"
+      GLITCHTIP_EMBED_WORKER: "true"
+      VTASKS_CONCURRENCY: "4"
+    volumes:
+      - glitchtip-data:/app/data
+    networks:
+      - rapidrop-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:latest
+    command: celery -A glitchtip worker -l INFO
+    environment:
+      DATABASE_URL: postgres://rapidrop:rapidrop_dev@postgres:5432/glitchtip
+      SECRET_KEY: rapidrop-glitchtip-dev-secret-key-change-in-prod
+      PORT: "8000"
+      DISABLE_USER_REGISTRATION: "True"
+      ALLOWED_HOSTS: "localhost,glitchtip,127.0.0.1"
+      EMAIL_URL: smtp://localhost:25
+      CACHE_URL: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: "False"
+    volumes:
+      - glitchtip-data:/app/data
+    networks:
+      - rapidrop-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

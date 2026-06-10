@@ -9,6 +9,7 @@ const navItems = [
   { href: "/app", label: "Dashboard" },
   { href: "/app/products", label: "Produtos" },
   { href: "/app/categories", label: "Categorias" },
+  { href: "/app/riders", label: "Entregadores" },
   { href: "/app/settings", label: "Configurações" },
 ];
 

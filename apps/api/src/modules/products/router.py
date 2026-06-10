@@ -1,11 +1,13 @@
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.models.product import UnitType
 from src.modules.auth.deps import extract_merchant_id, get_current_merchant
 from src.modules.products.schemas import (
+    AvailabilityToggle,
+    PhotoUploadResponse,
     ProductCreate,
     ProductListResponse,
     ProductResponse,
@@ -22,8 +24,10 @@ from src.modules.products.service import (
     delete_variation,
     get_product,
     list_products,
+    set_product_availability,
     update_product,
     update_variation,
+    upload_product_photo,
 )
 
 logger = structlog.get_logger()
@@ -162,6 +166,62 @@ async def delete_product_endpoint(
 
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+
+@router.patch("/{product_id}/availability", response_model=ProductResponse)
+async def toggle_product_availability(
+    product_id: str,
+    body: AvailabilityToggle,
+    current_merchant: dict = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+):
+    """Toggle product availability (is_available)."""
+    merchant_id = extract_merchant_id(current_merchant)
+    product = await set_product_availability(db, product_id, merchant_id, body.is_available)
+
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    return _product_to_response(product)
+
+
+@router.post("/{product_id}/photo", response_model=PhotoUploadResponse)
+async def upload_product_photo_endpoint(
+    product_id: str,
+    file: UploadFile = File(...),
+    current_merchant: dict = Depends(get_current_merchant),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload a product photo to S3-compatible storage."""
+    valid_types = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in valid_types:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(valid_types))}",
+        )
+
+    max_size = 5 * 1024 * 1024  # 5 MB
+    contents = await file.read()
+    if len(contents) > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File too large. Maximum size is 5 MB.",
+        )
+
+    merchant_id = extract_merchant_id(current_merchant)
+    url = await upload_product_photo(
+        db,
+        product_id,
+        merchant_id,
+        contents,
+        file.content_type or "image/jpeg",
+        file.filename or "photo.jpg",
+    )
+
+    if url is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    return PhotoUploadResponse(image_url=url)
 
 
 # --- Variation Endpoints ---

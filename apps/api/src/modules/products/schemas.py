@@ -65,6 +65,18 @@ class ProductListResponse(BaseModel):
     total: int
 
 
+class AvailabilityToggle(BaseModel):
+    """Request body for toggling product availability."""
+
+    is_available: bool
+
+
+class PhotoUploadResponse(BaseModel):
+    """Response after uploading a product photo."""
+
+    image_url: str
+
+
 # --- Variations ---
 
 

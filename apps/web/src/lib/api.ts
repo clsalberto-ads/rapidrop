@@ -93,11 +93,48 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return response.json();
 }
 
+async function requestFormData<T>(path: string, formData: FormData, token?: string): Promise<T> {
+  const headers: Record<string, string> = {};
+  const accessToken = token ?? localStorage.getItem("access_token");
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+
+  let response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (response.status === 401 && accessToken) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      headers["Authorization"] = `Bearer ${newToken}`;
+      response = await fetch(`${API_URL}${path}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+    }
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: "Erro desconhecido" }));
+    throw new Error(error.detail || error.message || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export const api = {
   get: <T>(path: string, token?: string) => request<T>(path, { token }),
   post: <T>(path: string, body: unknown, token?: string) =>
     request<T>(path, { method: "POST", body, token }),
   put: <T>(path: string, body: unknown, token?: string) =>
     request<T>(path, { method: "PUT", body, token }),
+  patch: <T>(path: string, body: unknown, token?: string) =>
+    request<T>(path, { method: "PATCH", body, token }),
   delete: <T>(path: string, token?: string) => request<T>(path, { method: "DELETE", token }),
+  upload: <T>(path: string, formData: FormData, token?: string) =>
+    requestFormData<T>(path, formData, token),
 };

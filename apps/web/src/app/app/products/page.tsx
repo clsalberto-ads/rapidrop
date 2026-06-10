@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -134,10 +135,28 @@ export default function ProductsPage() {
   const handleToggle = async (prod: Product) => {
     if (!token) return;
     try {
-      await api.put(`/api/v1/products/${prod.id}`, { is_available: !prod.is_available }, token);
+      await api.patch(`/api/v1/products/${prod.id}/availability`, { is_available: !prod.is_available }, token);
       await fetchData();
     } catch (err) {
       console.error("Failed to toggle product", err);
+    }
+  };
+
+  const handlePhotoUpload = async (productId: string, file: File) => {
+    if (!token) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await api.upload<{ image_url: string }>(
+        `/api/v1/products/${productId}/photo`,
+        formData,
+        token,
+      );
+      // Refresh to show new photo
+      await fetchData();
+      return result.image_url;
+    } catch (err) {
+      console.error("Failed to upload photo", err);
     }
   };
 
@@ -355,6 +374,42 @@ export default function ProductsPage() {
             ))}
           </div>
 
+          {/* Photo upload */}
+          {editing && (
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Foto do produto</h4>
+              {editing.image_url && (
+                <div className="mb-2">
+                  <Image
+                    src={editing.image_url}
+                    alt={editing.name}
+                    width={128}
+                    height={128}
+                    className="w-32 h-32 object-cover rounded-lg border"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-primary-600 hover:text-primary-800">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      await handlePhotoUpload(editing.id, file);
+                    }
+                  }}
+                />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {editing.image_url ? "Trocar foto" : "Adicionar foto"}
+              </label>
+            </div>
+          )}
+
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSave} isLoading={saving}>
               {editing ? "Salvar" : "Criar produto"}
@@ -386,8 +441,19 @@ export default function ProductsPage() {
                 !prod.is_available ? "opacity-60" : ""
               }`}
             >
+              {prod.image_url && (
+                <div className="mb-3 -mx-5 -mt-5 rounded-t-xl overflow-hidden h-36 bg-gray-100 relative">
+                  <Image
+                    src={prod.image_url}
+                    alt={prod.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              )}
               <div className="flex items-start justify-between mb-2">
-                <div>
+                <div className={prod.image_url ? "" : "mt-0"}>
                   <h3 className="font-medium text-gray-900">{prod.name}</h3>
                   {prod.category_name && (
                     <span className="text-xs text-gray-400">{prod.category_name}</span>

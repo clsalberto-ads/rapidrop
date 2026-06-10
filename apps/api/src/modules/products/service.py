@@ -1,8 +1,11 @@
+import uuid
+
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
+from src.integrations.storage import upload_fileobj
 from src.models.product import Product, ProductVariation
 
 logger = structlog.get_logger()
@@ -97,6 +100,62 @@ async def delete_product(db: AsyncSession, product_id: str, merchant_id: str) ->
     await db.commit()
     logger.info("product_deactivated", merchant_id=merchant_id, product_id=str(product_id))
     return True
+
+
+async def set_product_availability(
+    db: AsyncSession, product_id: str, merchant_id: str, is_available: bool
+) -> Product | None:
+    """Set a product's availability (is_available)."""
+    product = await get_product(db, product_id, merchant_id)
+    if not product:
+        return None
+
+    product.is_available = is_available
+    await db.commit()
+    await db.refresh(product)
+    logger.info(
+        "product_availability_updated",
+        merchant_id=merchant_id,
+        product_id=product_id,
+        is_available=is_available,
+    )
+    return product
+
+
+async def upload_product_photo(
+    db: AsyncSession,
+    product_id: str,
+    merchant_id: str,
+    file_contents: bytes,
+    content_type: str,
+    filename: str,
+) -> str | None:
+    """Upload a photo for a product and update its image_url.
+
+    Returns the new image URL, or None if the product was not found.
+    """
+    product = await get_product(db, product_id, merchant_id)
+    if not product:
+        return None
+
+    # Generate a unique S3 key
+    ext = filename.rsplit(".", 1)[-1] if "." in filename else "jpg"
+    s3_key = f"products/{product_id}/{uuid.uuid4().hex}.{ext}"
+
+    import io
+
+    fileobj = io.BytesIO(file_contents)
+    url = upload_fileobj(fileobj, key=s3_key, content_type=content_type)
+
+    if url is None:
+        logger.error("product_photo_upload_failed", product_id=product_id)
+        return None
+
+    product.image_url = url
+    await db.commit()
+    await db.refresh(product)
+    logger.info("product_photo_uploaded", product_id=product_id, url=url)
+    return url
 
 
 # --- Variations ---

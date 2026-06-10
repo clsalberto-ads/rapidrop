@@ -13,6 +13,7 @@ from src.modules.categories.router import router as categories_router
 from src.modules.merchants.router import router as merchants_router
 from src.modules.onboarding.router import router as onboarding_router
 from src.modules.products.router import router as products_router
+from src.modules.riders.router import router as riders_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ def create_app() -> FastAPI:
     app.include_router(onboarding_router)
     app.include_router(categories_router)
     app.include_router(products_router)
+    app.include_router(riders_router)
 
     Instrumentator().instrument(app).expose(app)
 
